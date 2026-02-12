@@ -4,9 +4,18 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors();
-  // The '0.0.0.0' tells Nest to listen on every available network interface
-  await app.listen(3000); 
-  console.log(`Application is running on: ${await app.getUrl()}`);
+  await app.listen(3000);
 }
-bootstrap();
 
+// Vercel needs the app exported to handle serverless requests
+export default async (req: any, res: any) => {
+  const app = await NestFactory.create(AppModule);
+  app.enableCors();
+  const instance = await app.getHttpAdapter().getInstance();
+  return instance(req, res);
+};
+
+// Keep the bootstrap for local development
+if (process.env.NODE_ENV !== 'production') {
+  bootstrap();
+}
