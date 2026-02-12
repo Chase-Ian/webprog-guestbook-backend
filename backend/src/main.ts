@@ -1,42 +1,32 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { INestApplication } from '@nestjs/common';
 
-let app;
+// This variable will store our app so we don't reboot it every time
+let cachedApp: INestApplication;
 
-async function getApp() {
-  if (!app) {
-    app = await NestFactory.create(AppModule);
-    app.enableCors();
+async function bootstrapServer(): Promise<any> {
+  if (!cachedApp) {
+    const app = await NestFactory.create(AppModule);
+    app.enableCors(); // Leave this open for now to ensure it works
+    await app.init();
+    cachedApp = app;
   }
-  return app;
+  return cachedApp.getHttpAdapter().getInstance();
 }
 
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  app.enableCors();
-  await app.listen(3000);
-}
-
+// Export the handler for Vercel
 export default async (req: any, res: any) => {
-  const app = await NestFactory.create(AppModule);
-  
-  // Explicitly configure CORS here for Vercel
-  app.enableCors({
-    origin: 'https://webprog-guestbook-frontend-98nhund6g-chase-ian-s-projects.vercel.app',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: true,
-  });
-
-  await app.init(); // Important for serverless!
-  
-  const instance = app.getHttpAdapter().getInstance();
-  return instance(req, res);
+  const proxyServer = await bootstrapServer();
+  return proxyServer(req, res);
 };
 
-// Keep the bootstrap for local development
+// Local development support
 if (process.env.NODE_ENV !== 'production') {
-  bootstrap().catch((err) => {
-    console.error('Bootstrap error:', err);
-    process.exit(1);
-  });
+  async function startLocal() {
+    const app = await NestFactory.create(AppModule);
+    app.enableCors();
+    await app.listen(3000);
+  }
+  startLocal();
 }
