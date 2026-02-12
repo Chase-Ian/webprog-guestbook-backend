@@ -18,22 +18,26 @@ export class GuestbookService {
   }
 
   async findAll() {
-    const { data } = await this.supabase.from('guestbook').select('*').order('created_at', { ascending: false });
+    const { data, error } = await this.supabase.from('guestbook').select('*').order('created_at', { ascending: false });
+    if (error) throw new Error(`Failed to fetch guestbook: ${error.message}`);
     return data;
   }
 
   async create(payload: { name: string; message: string }) {
-    const { data } = await this.supabase.from('guestbook').insert([payload]).select();
+    const { data, error } = await this.supabase.from('guestbook').insert([payload]).select();
+    if (error) throw new Error(`Failed to create entry: ${error.message}`);
     return data;
   }
 
   async update(id: string, message: string) {
-    const { data } = await this.supabase.from('guestbook').update({ message }).eq('id', id).select();
+    const { data, error } = await this.supabase.from('guestbook').update({ message }).eq('id', id).select();
+    if (error) throw new Error(`Failed to update entry: ${error.message}`);
     return data;
   }
 
   async delete(id: string) {
-    await this.supabase.from('guestbook').delete().eq('id', id);
+    const { error } = await this.supabase.from('guestbook').delete().eq('id', id);
+    if (error) throw new Error(`Failed to delete entry: ${error.message}`);
     return { deleted: true };
   }
 }
