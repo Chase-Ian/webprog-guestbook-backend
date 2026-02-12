@@ -9,7 +9,6 @@ async function bootstrapServer(): Promise<any> {
   if (!cachedApp) {
     const app = await NestFactory.create(AppModule);
     app.enableCors(); // Leave this open for now to ensure it works
-    app.setGlobalPrefix('api'); // Add /api prefix to all routes
     await app.init();
     cachedApp = app;
   }
@@ -27,7 +26,6 @@ if (process.env.NODE_ENV !== 'production') {
   async function startLocal() {
     const app = await NestFactory.create(AppModule);
     app.enableCors();
-    app.setGlobalPrefix('api'); // Add /api prefix to all routes
     await app.listen(3000);
   }
   startLocal();
