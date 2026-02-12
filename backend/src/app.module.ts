@@ -5,10 +5,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
 @Module({
-  imports: [
-   ConfigModule.forRoot({ isGlobal: true })
-  ],
-  controllers: [AppController],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), GuestbookModule],
+  controllers: [AppController], // This is what shows "Hello World"
   providers: [AppService],
 })
 export class AppModule {}
