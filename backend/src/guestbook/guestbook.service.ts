@@ -1,16 +1,21 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 @Injectable()
 export class GuestbookService {
   private supabase: SupabaseClient;
 
-  constructor() {
-  this.supabase = createClient(
-    process.env.SUPABASE_URL!, // The ! tells TS this won't be undefined
-    process.env.SUPABASE_KEY!
-  );
-}
+  constructor(private configService: ConfigService) {
+    const url = this.configService.get<string>('SUPABASE_URL');
+    const key = this.configService.get<string>('SUPABASE_KEY');
+
+    if (!url || !key) {
+      throw new Error('Missing SUPABASE_URL or SUPABASE_KEY environment variables');
+    }
+
+    this.supabase = createClient(url, key);
+  }
 
   async findAll() {
     const { data } = await this.supabase.from('guestbook').select('*').order('created_at', { ascending: false });

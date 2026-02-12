@@ -1,21 +1,39 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
+let app;
+
+async function getApp() {
+  if (!app) {
+    app = await NestFactory.create(AppModule);
+    app.enableCors();
+  }
+  return app;
+}
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors();
   await app.listen(3000);
 }
 
-// Vercel needs the app exported to handle serverless requests
+// Vercel serverless handler
 export default async (req: any, res: any) => {
-  const app = await NestFactory.create(AppModule);
-  app.enableCors();
-  const instance = await app.getHttpAdapter().getInstance();
-  return instance(req, res);
+  try {
+    const app = await getApp();
+    const instance = app.getHttpAdapter().getInstance();
+    return instance(req, res);
+  } catch (error) {
+    console.error('Error in Vercel handler:', error);
+    res.status(500).json({ error: 'Internal Server Error', details: error.message });
+  }
 };
 
 // Keep the bootstrap for local development
 if (process.env.NODE_ENV !== 'production') {
-  bootstrap();
+  bootstrap().catch((err) => {
+    console.error('Bootstrap error:', err);
+    process.exit(1);
+  });
+}
 }
