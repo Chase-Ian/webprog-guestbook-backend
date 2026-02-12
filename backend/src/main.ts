@@ -17,16 +17,20 @@ async function bootstrap() {
   await app.listen(3000);
 }
 
-// Vercel serverless handler
 export default async (req: any, res: any) => {
-  try {
-    const app = await getApp();
-    const instance = app.getHttpAdapter().getInstance();
-    return instance(req, res);
-  } catch (error) {
-    console.error('Error in Vercel handler:', error);
-    res.status(500).json({ error: 'Internal Server Error', details: error.message });
-  }
+  const app = await NestFactory.create(AppModule);
+  
+  // Explicitly configure CORS here for Vercel
+  app.enableCors({
+    origin: 'https://webprog-guestbook-frontend-98nhund6g-chase-ian-s-projects.vercel.app',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+  });
+
+  await app.init(); // Important for serverless!
+  
+  const instance = app.getHttpAdapter().getInstance();
+  return instance(req, res);
 };
 
 // Keep the bootstrap for local development
@@ -36,9 +40,3 @@ if (process.env.NODE_ENV !== 'production') {
     process.exit(1);
   });
 }
-
-app.enableCors({
-  origin: 'https://webprog-guestbook-backend-nzyxwy0ej-chase-ian-s-projects.vercel.app/', // Replace with your real URL
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  credentials: true,
-});
