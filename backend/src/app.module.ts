@@ -6,7 +6,8 @@ import { AppService } from './app.service';
 
 @Module({
   imports: [
-   ConfigModule.forRoot({ isGlobal: true })
+    ConfigModule.forRoot({ isGlobal: true }),
+    GuestbookModule
   ],
   controllers: [AppController],
   providers: [AppService],
