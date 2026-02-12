@@ -15,10 +15,13 @@ async function bootstrapServer(): Promise<any> {
   return cachedApp.getHttpAdapter().getInstance();
 }
 
-// Export the handler for Vercel
 export default async (req: any, res: any) => {
-  const proxyServer = await bootstrapServer();
-  return proxyServer(req, res);
+  const app = await NestFactory.create(AppModule);
+  app.enableCors(); // Essential for your React app to talk to it
+  await app.init(); // This is the magic line for serverless
+  
+  const instance = app.getHttpAdapter().getInstance();
+  return instance(req, res);
 };
 
 // Local development support
