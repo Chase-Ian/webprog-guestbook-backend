@@ -36,4 +36,9 @@ if (process.env.NODE_ENV !== 'production') {
     process.exit(1);
   });
 }
-}
+
+app.enableCors({
+  origin: 'https://webprog-guestbook-backend-nzyxwy0ej-chase-ian-s-projects.vercel.app/', // Replace with your real URL
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+});
